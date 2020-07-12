@@ -5,6 +5,7 @@ import (
 	"packform/api/controller/order"
 	"packform/api/controller/upload"
 	"packform/utils/injector"
+
 	"github.com/gin-gonic/gin"
 	"github.com/subosito/gotenv"
 )
@@ -16,13 +17,11 @@ func Init(){
 	gotenv.Load()
 	context.SetDbContext(os.Getenv("DB_HOST"), os.Getenv("CONN_STR"))
 	context.InitTables()
-
 	context.SetMongoContext(os.Getenv("MONGO_URI"))
 
 }
 
-
-func main()  {
+func SetupRouter() *gin.Engine{
 	Init()
 
 	r := gin.Default()
@@ -40,9 +39,12 @@ func main()  {
 		AddRouter.POST("/companies", upload.UploadCompanies(context))
 	}
 
+	return r
+}
 
 
+func main()  {
 
-
+	r := SetupRouter()
 	r.Run(":8080")
 }
