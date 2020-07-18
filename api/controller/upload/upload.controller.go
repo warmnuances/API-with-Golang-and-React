@@ -249,6 +249,7 @@ func UploadCompanies(context *injector.DepContainer) gin.HandlerFunc{
 
 		orders_list := make(chan []string)
 		file, _, _ := c.Request.FormFile("file");
+
 		
 		wg.Add(1)
 

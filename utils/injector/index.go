@@ -60,7 +60,7 @@ func (depContainer *DepContainer) SetDbContext(driverName string, dataSourceName
 	}
 
 	if err != nil {
-		log.Panic(err)
+		log.Panicln(err)
 		log.Panic("Database Instance not initialised")
 		depContainer.db = nil
 	}else{
