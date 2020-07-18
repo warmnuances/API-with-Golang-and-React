@@ -8,8 +8,8 @@ Running the Backend Application:
 4. go run main.go
 
 Running the Frontend Application: 
-1.npm install 
-2.npm start
+1. `npm install`
+2. `npm start`
 
 Get All Orders :
 `host:  localhost:8080`
