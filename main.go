@@ -5,9 +5,9 @@ import (
 	"packform/api/controller/order"
 	"packform/api/controller/upload"
 	"packform/utils/injector"
-
 	"github.com/gin-gonic/gin"
 	"github.com/subosito/gotenv"
+	"github.com/gin-contrib/cors"
 )
 
 var context *injector.DepContainer
@@ -25,6 +25,8 @@ func SetupRouter() *gin.Engine{
 	Init()
 
 	r := gin.Default()
+	r.Use(cors.Default())
+	
 	OrderRouter := r.Group("/orders")
 	{
 		OrderRouter.GET("/mongo", order.TestMongo(context))
