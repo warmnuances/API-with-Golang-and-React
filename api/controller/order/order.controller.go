@@ -78,7 +78,6 @@ func _joinMongoDb(dict chan map[string]string, context *injector.DepContainer,
 	/** Populate Dictionary with Names**/
 	err := stmt.Select(&result,orderName,custId,page)
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 	// fmt.Println(result)
@@ -151,6 +150,7 @@ func GetOrdersCollection(context *injector.DepContainer) gin.HandlerFunc{
 			AND customer_id LIKE coalesce(NULLIF($2,''), '%')
 			AND created_at::date > coalesce($3, '1970-01-01')::date
 			AND created_at::date < coalesce($4, '9999-01-01')::date
+			LIMIT 5
 			OFFSET coalesce(greatest($5*5,0),0) 
 		) AS filtered_orders
 		LEFT JOIN order_item ON filtered_orders.id = order_item.order_id
@@ -233,15 +233,15 @@ func GetOrdersCollection(context *injector.DepContainer) gin.HandlerFunc{
 		}
 		
 
-		fmt.Println(orderName)
-		fmt.Println(custId)
-		fmt.Println(ipage)
-		fmt.Println(iDelivered_min)
-		fmt.Println(iDelivered_max)
-		fmt.Println(iTotal_min)
-		fmt.Println(iTotal_max)
-		fmt.Println("Sdate",start_date)
-		fmt.Println("Edatec",end_date)
+		// fmt.Println(orderName)
+		// fmt.Println(custId)
+		// fmt.Println(ipage)
+		// fmt.Println(iDelivered_min)
+		// fmt.Println(iDelivered_max)
+		// fmt.Println(iTotal_min)
+		// fmt.Println(iTotal_max)
+		// fmt.Println("Sdate",start_date)
+		// fmt.Println("Edatec",end_date)
 
 
 		orderCollection := orders.NewCollections().OrderList
@@ -260,12 +260,9 @@ func GetOrdersCollection(context *injector.DepContainer) gin.HandlerFunc{
 
 		// fmt.Println(stmt)
 
-		// iTotal_max, err = decimal.NewFromString("99999.99")
-		// iDelivered_max, err = decimal.NewFromString("99999.99")
-
-		if err != nil {
-			fmt.Println(err)
-		}
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
 
 		// sql statement takes float as []uint_8 -> cast in psql
 		errsql := stmt.Select(&orderCollection,
@@ -289,9 +286,18 @@ func GetOrdersCollection(context *injector.DepContainer) gin.HandlerFunc{
 		for i, order := range orderCollection {
 			orderCollection[i].Customer_company = result_dict[order.Customer_Id]
 		}
+
+
+		var count int
+		err = db.Get(&count, "SELECT count(*) FROM orders")
+		if err != nil{
+			c.AbortWithStatusJSON(500, gin.H{"status": false, "message": errsql.Error()})
+		}
+
 		c.JSON(200, gin.H{
 			"message": "OrderCollection" ,
 			"result":orderCollection,
+			"rowCount": count ,
 		})
 
 		

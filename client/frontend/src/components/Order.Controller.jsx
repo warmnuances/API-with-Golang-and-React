@@ -8,7 +8,7 @@ import _ from 'lodash'
 import Skeleton from 'react-loading-skeleton';
 import { Grid, Icon, Pagination, Input, Button } from 'semantic-ui-react'
 import { DateRange } from 'react-date-range';
-import { format } from 'date-fns';
+import { format, addMonths, getMonth } from 'date-fns';
 
 
 
@@ -18,6 +18,7 @@ const url = "http://localhost:8080/orders/all"
 function OrderController(props) {
   const { location, history } = props
 
+  const [noPages,setNoPages] = React.useState(1)
   const [search, setSearch] = React.useState("")
   const [loading, setLoading] = React.useState(false)
   const [debouncedSearch] = useDebounce(search, 500);
@@ -53,7 +54,6 @@ function OrderController(props) {
 
   const fieldOptions = [
     {key: 'order_name', value: 'order_name',text: 'Order Name'},
-    {key: 'customer_company', value: 'cust_company',text: 'Customer company'},
     {key: 'customer_id', value: 'cust_id',text: 'Customer Name'}
   ]
 
@@ -66,16 +66,19 @@ function OrderController(props) {
   React.useEffect(() => {
     reRender(false)
     const source = Axios.CancelToken.source();
+    setLoading(true)
     getOrders(source.token, page, date, amount, field, debouncedSearch, amtField)
       .then(({data}) => {
         setResult(data.result)
+        setLoading(false)
+        setNoPages(Math.ceil(data.rowCount/5))
       })
       .catch(e => {
         if (Axios.isCancel(source)) {
           return;
         }
         setResult([]);
-        setLoading(false)
+      
       });
 
     return () => {
@@ -85,7 +88,7 @@ function OrderController(props) {
       );
     };
 
-  }, [debouncedSearch, page, render])
+  }, [debouncedSearch, page, render, noPages])
 
 
 
@@ -96,20 +99,22 @@ function OrderController(props) {
     const search = args[3]
     const amtField = args[4]
 
-    console.log(amtField)
+    
+    let sDate = new Date(startDate)
+    let eDate = new Date(endDate)
+    const formattedStart = format(sDate, "yyyy-mm-dd'T'HH:mm:'12Z'")
+    const formattedEnd = format(eDate, "yyyy-mm-dd'T'HH:mm:'12Z'")
 
+    //JS month start with 0 -> normalise
+    let nsDate = normaliseDate(formattedStart)
+    let neDate = normaliseDate(formattedEnd)
 
-    const formattedStart = format(new Date(startDate), "yyyy-mm-dd'T'HH:mm:'12Z'")
-    const formattedEnd = format(new Date(endDate), "yyyy-mm-dd'T'HH:mm:'12Z'")
-    let formedUrl = `${url}?page=${page||0}`
+    let formedUrl = `${url}?page=${(page - 1)||0}`
       + `${ (min > 0)? `&${amtField}_min=${min}` : ''}`
       + `${ (max > 0)? `&${amtField}_max=${max}`: ''}`
       + `${(field && search)? `&${field}=${search}`: ""}`
-      + `${(startDate && endDate)? `&startDate=${formattedStart}&endDate=${formattedEnd}`: ""}`
+      + `${(startDate && endDate)? `&startDate=${nsDate}&endDate=${neDate}`: ""}`
       
-    
-    // console.log(encodeURI(formedUrl))
-
 
     return Axios
       .get(encodeURI(formedUrl), {
@@ -141,6 +146,16 @@ function OrderController(props) {
     })
   }
 
+  function normaliseDate(date){
+    let replace = (parseInt(date[6]) + 1) + ""
+    let result  = date.substring(0, 6) + replace +date.substring(7)
+    return result
+  }
+
+
+  function onClickRender(){
+    reRender(true)
+  }
   return (
     <Segment>
       <Grid>
@@ -157,14 +172,15 @@ function OrderController(props) {
                   setField(value)
                 }}
               />
-              <Search
-                  open={false}
-                  loading={loading}
-                  onSearchChange={_.debounce(handleSearchChange, 300 ,{leading: true})}
-                  value={search}
-                  placeholder="Search"
-              >   
+                <Search
+                    open={false}
+                    loading={loading}
+                    onSearchChange={_.debounce(handleSearchChange, 300 ,{leading: true})}
+                    value={search}
+                    placeholder="Search"
+                >   
               </Search>
+              <Button primary onClick={onClickRender}>Search</Button>
             </div>
             
             <Grid.Row className="container__filter__element--range">
@@ -209,6 +225,7 @@ function OrderController(props) {
                 moveRangeOnFirstSelection={false}
                 ranges={date}
               />
+              <Button primary onClick={onClickRender}>Select Date</Button>
             </div>
         </Grid.Row>
 
@@ -230,7 +247,7 @@ function OrderController(props) {
           lastItem={{ content: <Icon name='angle double right' />, icon: true }}
           prevItem={{ content: <Icon name='angle left' />, icon: true }}
           nextItem={{ content: <Icon name='angle right' />, icon: true }}
-          totalPages={10}
+          totalPages={noPages}
           onPageChange={(e,{activePage}) => {
             setLoading(true)
             history.push({
