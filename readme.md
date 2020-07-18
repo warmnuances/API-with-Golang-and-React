@@ -51,4 +51,5 @@ Files must be uploaded as :
 5. Test task - Mongo - customer_companies
 `/add/companies` <br/>
 
+File upload as multipart/form-data <br/>
 ![alt text](https://github.com/warmnuances/packform_test/blob/master/screenshots/FileUploadAPI.JPG)
