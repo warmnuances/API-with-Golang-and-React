@@ -8,8 +8,7 @@ require (
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/lib/pq v1.0.0
 	github.com/shopspring/decimal v1.2.0
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.6.1
 	github.com/subosito/gotenv v1.2.0
-	github.com/tidwall/gjson v1.6.0
-	go.mongodb.org/mongo-driver v1.3.5
+	go.mongodb.org/mongo-driver v1.5.1
 )
