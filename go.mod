@@ -10,6 +10,7 @@ require (
 	github.com/shopspring/decimal v1.2.0
 	github.com/stretchr/testify v1.4.0
 	github.com/subosito/gotenv v1.2.0
-	github.com/tidwall/gjson v1.6.0
+	github.com/tidwall/pretty v1.2.0 // indirect
 	go.mongodb.org/mongo-driver v1.3.5
+	google.golang.org/appengine v1.6.7 // indirect
 )
